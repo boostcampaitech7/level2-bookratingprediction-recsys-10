@@ -9,7 +9,9 @@ from src.utils import Logger, Setting
 import src.data as data_module
 from src.train import train, test
 import src.models as model_module
-
+from dotenv import load_dotenv
+import os
+import wandb
 
 def main(args, wandb=None):
     Setting.seed_everything(args.seed)
@@ -74,6 +76,14 @@ def main(args, wandb=None):
 
 
 if __name__ == "__main__":
+    # 1. .env 파일에서 환경 변수 로드
+    load_dotenv()
+
+    # 2. wandb API 키 불러오기
+    api_key = os.getenv("WANDB_API_KEY")
+
+    # 3. wandb 로그인
+    wandb.login(key=api_key)
 
 
     ######################## BASIC ENVIRONMENT SETUP
@@ -150,22 +160,17 @@ if __name__ == "__main__":
     print(OmegaConf.to_yaml(config_yaml))
     
     ######################## W&B
-    if args.wandb:
-        import wandb
-        # wandb.require("core")
-        # https://docs.wandb.ai/ref/python/init 참고
-        wandb.init(project=config_yaml.wandb_project, 
-                   config=OmegaConf.to_container(config_yaml, resolve=True),
-                   name=config_yaml.run_name if config_yaml.run_name else None,
-                   notes=config_yaml.memo if hasattr(config_yaml, 'memo') else None,
-                   tags=[config_yaml.model],
-                   resume="allow")
-        config_yaml.run_href = wandb.run.get_url()
+ 
+    wandb.init(project=config_yaml.wandb_project, 
+                config=OmegaConf.to_container(config_yaml, resolve=True),
+                name=config_yaml.run_name if config_yaml.run_name else None,
+                notes=config_yaml.memo if hasattr(config_yaml, 'memo') else None,
+                tags=[config_yaml.model],
+                resume="allow")
+    config_yaml.run_href = wandb.run.get_url()
 
-        wandb.run.log_code("./src")  # src 내의 모든 파일을 업로드. Artifacts에서 확인 가능
+    wandb.run.log_code("./src")  # src 내의 모든 파일을 업로드. Artifacts에서 확인 가능
 
     ######################## MAIN
     main(config_yaml)
-
-    if args.wandb:
-        wandb.finish()
+    wandb.finish()

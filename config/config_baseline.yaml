@@ -15,7 +15,7 @@ checkpoint: 'saved/checkpoints/FM_best.pt'   # 예측 시 불러올 모델 경�
 seed: 0         # 시드 고정
 device: cuda    # 가능한 값 : cpu, cuda, mps
 model: FM       # 모델 선택
-wandb: False                            # wandb 사용 여부
+wandb: True                            # wandb 사용 여부
 wandb_project: 'book-rating-prediction' # wandb 프로젝트 이름
 run_name: ''                            # wandb 실행 이름. 빈 문자열일 경우 자동 생성
 
@@ -100,7 +100,7 @@ model_args:     # model에 해당하는 파라미터만 실질적으로 사용�
 
 
 dataset:
-    data_path: data/    # 데이터셋 경로
+    data_path: src/data/    # 데이터셋 경로
     valid_ratio: 0.2    # Train / Vaildation split
 
 dataloader:

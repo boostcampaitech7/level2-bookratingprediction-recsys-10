@@ -1,0 +1,19 @@
+{"time":"2024-10-30T14:06:38.286279+09:00","level":"INFO","msg":"using version","core version":"0.18.5"}
+{"time":"2024-10-30T14:06:38.286314+09:00","level":"INFO","msg":"created symlink","path":"/Users/jeongmookwag/boostcourse/level2-bookratingprediction-recsys-10/wandb/run-20241030_140638-u0ajccsx/logs/debug-core.log"}
+{"time":"2024-10-30T14:06:38.397382+09:00","level":"INFO","msg":"created new stream","id":"u0ajccsx"}
+{"time":"2024-10-30T14:06:38.397432+09:00","level":"INFO","msg":"stream: started","id":"u0ajccsx"}
+{"time":"2024-10-30T14:06:38.39747+09:00","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"u0ajccsx"}}
+{"time":"2024-10-30T14:06:38.397603+09:00","level":"INFO","msg":"sender: started","stream_id":"u0ajccsx"}
+{"time":"2024-10-30T14:06:38.397694+09:00","level":"INFO","msg":"handler: started","stream_id":{"value":"u0ajccsx"}}
+{"time":"2024-10-30T14:06:38.996525+09:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-10-30T14:08:26.991683+09:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-10-30T14:08:26.992298+09:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-10-30T14:08:27.997257+09:00","level":"INFO","msg":"handler: operation stats","stats":{"operations":[{"desc":"saving job artifact","runtime_seconds":0.567566666}],"total_operations":1}}
+{"time":"2024-10-30T14:08:30.140576+09:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2024-10-30T14:09:28.238974+09:00","level":"INFO","msg":"handler: operation stats","stats":{"operations":[{"desc":"uploading history, summary, console logs","runtime_seconds":58.09736875}],"total_operations":1}}
+{"time":"2024-10-30T14:09:30.404724+09:00","level":"INFO","msg":"api: retrying HTTP error","status":502,"url":"https://api.wandb.ai/files/rec_7/book-rating-prediction/u0ajccsx/file_stream"}
+{"time":"2024-10-30T14:09:33.887598+09:00","level":"INFO","msg":"stream: closing","id":"u0ajccsx"}
+{"time":"2024-10-30T14:09:33.887641+09:00","level":"INFO","msg":"handler: closed","stream_id":{"value":"u0ajccsx"}}
+{"time":"2024-10-30T14:09:33.887717+09:00","level":"INFO","msg":"writer: Close: closed","stream_id":{"value":"u0ajccsx"}}
+{"time":"2024-10-30T14:09:33.887745+09:00","level":"INFO","msg":"sender: closed","stream_id":"u0ajccsx"}
+{"time":"2024-10-30T14:09:33.889232+09:00","level":"INFO","msg":"stream: closed","id":"u0ajccsx"}
