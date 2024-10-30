@@ -12,6 +12,7 @@ import src.models as model_module
 from dotenv import load_dotenv
 import os
 import wandb
+from datetime import datetime
 
 def main(args, wandb=None):
     Setting.seed_everything(args.seed)
@@ -134,6 +135,10 @@ if __name__ == "__main__":
     for key in config_args.keys():
         if config_args[key] is not None:
             config_yaml[key] = config_args[key]
+    # wandb run name 지정       
+    timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    model_name = config_yaml['model']  # config에서 모델 이름 가져오기
+    run_name = f"{model_name}_{timestamp}"
     
     # 사용되지 않는 정보 삭제 (학습 시에만)
     if config_yaml.predict == False:
@@ -163,7 +168,7 @@ if __name__ == "__main__":
  
     wandb.init(project=config_yaml.wandb_project, 
                 config=OmegaConf.to_container(config_yaml, resolve=True),
-                name=config_yaml.run_name if config_yaml.run_name else None,
+                name=run_name,
                 notes=config_yaml.memo if hasattr(config_yaml, 'memo') else None,
                 tags=[config_yaml.model],
                 resume="allow")

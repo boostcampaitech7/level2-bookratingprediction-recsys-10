@@ -1,0 +1,17 @@
+{"time":"2024-10-30T14:18:36.550432+09:00","level":"INFO","msg":"using version","core version":"0.18.5"}
+{"time":"2024-10-30T14:18:36.550468+09:00","level":"INFO","msg":"created symlink","path":"/Users/jeongmookwag/boostcourse/level2-bookratingprediction-recsys-10/wandb/run-20241030_141836-zn9prspd/logs/debug-core.log"}
+{"time":"2024-10-30T14:18:36.673747+09:00","level":"INFO","msg":"created new stream","id":"zn9prspd"}
+{"time":"2024-10-30T14:18:36.673788+09:00","level":"INFO","msg":"stream: started","id":"zn9prspd"}
+{"time":"2024-10-30T14:18:36.673862+09:00","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"zn9prspd"}}
+{"time":"2024-10-30T14:18:36.673953+09:00","level":"INFO","msg":"sender: started","stream_id":"zn9prspd"}
+{"time":"2024-10-30T14:18:36.674076+09:00","level":"INFO","msg":"handler: started","stream_id":{"value":"zn9prspd"}}
+{"time":"2024-10-30T14:18:37.236481+09:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-10-30T14:20:32.311031+09:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-10-30T14:20:32.313239+09:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-10-30T14:20:33.316352+09:00","level":"INFO","msg":"handler: operation stats","stats":{"operations":[{"desc":"saving job artifact","runtime_seconds":0.459795666},{"desc":"uploading config.yaml","runtime_seconds":0.21135875,"progress":"1.8KB/1.8KB"},{"desc":"uploading output.log","runtime_seconds":0.211339541,"progress":"9.8KB/9.8KB"}],"total_operations":3}}
+{"time":"2024-10-30T14:20:35.75827+09:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2024-10-30T14:20:37.098545+09:00","level":"INFO","msg":"stream: closing","id":"zn9prspd"}
+{"time":"2024-10-30T14:20:37.098577+09:00","level":"INFO","msg":"handler: closed","stream_id":{"value":"zn9prspd"}}
+{"time":"2024-10-30T14:20:37.098687+09:00","level":"INFO","msg":"sender: closed","stream_id":"zn9prspd"}
+{"time":"2024-10-30T14:20:37.098675+09:00","level":"INFO","msg":"writer: Close: closed","stream_id":{"value":"zn9prspd"}}
+{"time":"2024-10-30T14:20:37.098805+09:00","level":"INFO","msg":"stream: closed","id":"zn9prspd"}
