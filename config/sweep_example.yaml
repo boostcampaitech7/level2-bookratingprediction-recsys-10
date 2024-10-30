@@ -1,0 +1,128 @@
+# sweep_example.yaml for FM Model
+# 만일 여러 모델을 한꺼번에 sweep하고자 할 경우, 불필요한 하이퍼파라미터 조합이 발생할 수 있습니다.
+# 예) FM 모델의 하이퍼파라미터가 튜닝되는 동안, FFM 모델의 하이퍼파라미터는 변경되더라도 중복된 결과를 내어 FM 모델의 하이퍼파라미터 튜닝이 늦어질 수 있습니다.
+# 따라서 본 예제에서는 FM 모델의 하이퍼파라미터만 튜닝하도록 하였습니다.
+
+
+program: main.py
+name: "Sweep Example (w/ FM)"
+project: book-rating-prediction
+method: bayes
+metric:
+    goal: minimize
+    name: 'Valid RMSE'
+description: |-
+    남겨둘 메모가 있다면 여기에.
+    여러 줄로도 작성 가능
+    wandb 사용 시 wandb의 description으로 사용됩니다.
+# command:  # 실행 명령어 : python main.py --param1 value1 ... 와 같은 형식으로 작성 (boolean flag는 True일 때만 사용)
+# - ${env}
+# - ${interpreter}
+# - ${program}
+# - ${args_no_boolean_flags}
+
+parameters:
+    config:         # configuration 파일 경로. 비워두면 됩니다.
+        value: ''
+    predict:
+        value: False
+    checkpoint:
+        value: ''
+    device:         # 가능한 값 : cpu, cuda, mps
+        value: cuda
+    model:          # 모델 선택
+        value: FM
+    wandb:          # wandb 사용 여부
+        value: True
+    wandb_project:  # wandb 프로젝트 이름
+        value: 'book-rating-prediction' 
+    run_name:       # wandb 실행 이름. 빈 문자열일 경우 자동 생성
+        value: ''
+    
+    seed:           # 시드 고정 (튜닝)
+        values: [0, 1, 2, 3, 4]
+
+
+    model_args:     # model에 해당하는 파라미터만 실질적으로 사용됩니다.
+        parameters:
+            FM:         # 모델 이름
+                parameters:
+                    datatype:           # basic, context, image, text 중 basic, context 가능
+                        value: context
+                    embed_dim:          # sparse 벡터를 임베딩할 차원 (튜닝)
+                        values: [8, 16, 32]
+
+    dataset:
+        parameters:
+            data_path:          # 데이터셋 경로
+                value: data/
+            valid_ratio:        # Train / Vaildation split
+                value: 0.2
+
+    dataloader:
+        parameters:
+            batch_size:         # 배치 사이즈 (튜닝)
+                values: [512, 1024, 2048]
+            shuffle:           # 학습 데이터 셔플 여부
+                value: True
+            num_workers:        # 멀티프로세서 수. 0: 메인프로세서만 사용
+                value: 0
+
+    optimizer:
+        parameters:
+            type:         # 사용가능한 optimizer: torch.optim.Optimizer 클래스 (https://pytorch.org/docs/stable/optim.html#algorithms)
+                value: Adam
+            args:           # 사용하고자 하는 클래스의 파라미터를 참고하여 추가해주시면 되며, 관계가 없는 파라미터는 무시됩니다.
+                parameters:
+                    lr:                 # 예) 모든 옵티마이저에서 사용되는 학습률 (튜닝)
+                        min: 1e-4
+                        max: 1e-2
+                    weight_decay:       # 예) Adam 등 / L2 정규화 가중치 (튜닝)
+                        min: 1e-6
+                        max: 1e-3
+                    amsgrad:            # 예) Adam 등 / amsgrad 사용 여부 (튜닝)
+                        values: [True, False]
+
+    loss:           # 직접 정의한 loss 클래스 또는 torch.nn.Module 클래스 (https://pytorch.org/docs/stable/nn.html#loss-functions)
+        value: RMSELoss
+    
+    lr_scheduler:
+        parameters:
+            use:                        # True: 사용 / False: 사용하지 않음 (튜닝)
+                values: [True, False]
+            type:                       # 사용가능한 lr_scheduler: torch.optim.lr_scheduler 클래스 (튜닝)
+                values: [ReduceLROnPlateau, StepLR]
+            args:                       # 사용하고자 하는 클래스의 파라미터를 참고하여 추가해주시면 되며, 관계가 없는 파라미터는 무시됩니다.
+                parameters:
+                    mode:               # 예) ReduceLROnPlateau / 'min' 또는 'max'
+                        value: min
+                    factor:             # 예) ReduceLROnPlateau / 학습률 감소 비율
+                        value: 0.1
+                    patience:           # 예) ReduceLROnPlateau / 학습률 감소 대기 기간
+                        value: 5
+                    cooldown:           # 예) ReduceLROnPlateau / 학습률 감소 후 다시 학습률 감소까지 대기 기간
+                        value: 1
+                    step_size:          # 예) StepLR / 학습률 감소 주기 (필수)
+                        value: 10
+                    gamma:              # 예) StepLR 등 / 학습률 감소 비율
+                        value: 0.1
+
+    metrics:        # 평가 지표. 직접 정의한 loss 클래스 또는 torch.nn.Module 클래스 (https://pytorch.org/docs/stable/nn.html#loss-functions)
+        value: [RMSELoss, MAELoss, MSELoss]
+
+    train:
+        parameters:
+            epochs:             # 학습 에폭 수
+                value: 20
+            log_dir:            # 로그 저장 경로
+                value: saved/log
+            ckpt_dir:           # 모델 저장 경로
+                value: saved/checkpoint    
+            submit_dir:         # 예측 저장 경로
+                value: saved/submit
+            save_best_model:    # True: val_loss가 최소인 모델 저장 / False: 모든 모델 저장
+                value: True
+            resume:             # 이어서 학습할 경우 True
+                value: False
+            resume_path:
+                value: ''
