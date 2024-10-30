@@ -1,0 +1,49 @@
+memo: '남겨둘 메모가 있다면 여기에.
+
+  여러 줄로도 작성 가능
+
+  wandb 사용 시 wandb의 description으로 사용됩니다.'
+predict: false
+seed: 0
+device: mps
+model: Text_FM
+wandb: true
+wandb_project: book-rating-prediction
+run_name: Text_FM_baseline_final
+model_args:
+  Text_FM:
+    datatype: text
+    vector_create: false
+    embed_dim: 16
+    pretrained_model: bert-base-uncased
+    word_dim: 768
+dataset:
+  data_path: data/
+  valid_ratio: 0.2
+dataloader:
+  batch_size: 1024
+  shuffle: true
+  num_workers: 0
+optimizer:
+  type: Adam
+  args:
+    lr: 0.005
+    weight_decay: 0.0001
+    amsgrad: false
+loss: RMSELoss
+lr_scheduler:
+  use: false
+metrics:
+- MSELoss
+- MAELoss
+- RMSELoss
+train:
+  epochs: 20
+  save_dir:
+    log: saved/log
+    checkpoint: saved/checkpoint
+    submit: saved/submit
+  save_best_model: true
+  resume: false
+config: config/config_baseline.yaml
+run_href: https://wandb.ai/ex-rearranger/book-rating-prediction/runs/8nc418i8

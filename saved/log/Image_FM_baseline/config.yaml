@@ -1,0 +1,56 @@
+memo: '남겨둘 메모가 있다면 여기에.
+
+  여러 줄로도 작성 가능
+
+  wandb 사용 시 wandb의 description으로 사용됩니다.'
+predict: false
+seed: 0
+device: mps
+model: Image_FM
+wandb: true
+wandb_project: book-rating-prediction
+run_name: Image_FM_baseline_final
+model_args:
+  Image_FM:
+    datatype: image
+    embed_dim: 16
+    img_size: 64
+    kernel_size: 3
+    channel_list:
+    - 8
+    - 16
+    - 32
+    stride: 2
+    padding: 1
+    cnn_batchnorm: true
+    cnn_dropout: 0.2
+dataset:
+  data_path: data/
+  valid_ratio: 0.2
+dataloader:
+  batch_size: 1024
+  shuffle: true
+  num_workers: 0
+optimizer:
+  type: Adam
+  args:
+    lr: 0.005
+    weight_decay: 0.0001
+    amsgrad: false
+loss: RMSELoss
+lr_scheduler:
+  use: false
+metrics:
+- MSELoss
+- MAELoss
+- RMSELoss
+train:
+  epochs: 20
+  save_dir:
+    log: saved/log
+    checkpoint: saved/checkpoint
+    submit: saved/submit
+  save_best_model: true
+  resume: false
+config: config/config_baseline.yaml
+run_href: https://wandb.ai/ex-rearranger/book-rating-prediction/runs/xbsi0vtc
