@@ -164,18 +164,21 @@ if __name__ == "__main__":
     # Configuration 콘솔에 출력
     print(OmegaConf.to_yaml(config_yaml))
     
-    ######################## W&B
- 
-    wandb.init(project=config_yaml.wandb_project, 
-                config=OmegaConf.to_container(config_yaml, resolve=True),
-                name=run_name,
-                notes=config_yaml.memo if hasattr(config_yaml, 'memo') else None,
-                tags=[config_yaml.model],
-                resume="allow")
-    config_yaml.run_href = wandb.run.get_url()
 
-    wandb.run.log_code("./src")  # src 내의 모든 파일을 업로드. Artifacts에서 확인 가능
+    ######################## W&B
+    if args.wandb: 
+        wandb.init(project=config_yaml.wandb_project, 
+                    config=OmegaConf.to_container(config_yaml, resolve=True),
+                    name=run_name,
+                    notes=config_yaml.memo if hasattr(config_yaml, 'memo') else None,
+                    tags=[config_yaml.model],
+                    resume="allow")
+        config_yaml.run_href = wandb.run.get_url()
+
+        wandb.run.log_code("./src")  # src 내의 모든 파일을 업로드. Artifacts에서 확인 가능
 
     ######################## MAIN
     main(config_yaml)
-    wandb.finish()
+    
+    if args.wandb:
+        wandb.finish()
