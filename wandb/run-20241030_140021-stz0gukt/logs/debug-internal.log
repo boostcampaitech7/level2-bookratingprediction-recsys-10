@@ -1,0 +1,16 @@
+{"time":"2024-10-30T14:00:21.25042+09:00","level":"INFO","msg":"using version","core version":"0.18.5"}
+{"time":"2024-10-30T14:00:21.250461+09:00","level":"INFO","msg":"created symlink","path":"/Users/jeongmookwag/boostcourse/level2-bookratingprediction-recsys-10/wandb/run-20241030_140021-stz0gukt/logs/debug-core.log"}
+{"time":"2024-10-30T14:00:21.564729+09:00","level":"INFO","msg":"created new stream","id":"stz0gukt"}
+{"time":"2024-10-30T14:00:21.564772+09:00","level":"INFO","msg":"stream: started","id":"stz0gukt"}
+{"time":"2024-10-30T14:00:21.564785+09:00","level":"INFO","msg":"sender: started","stream_id":"stz0gukt"}
+{"time":"2024-10-30T14:00:21.564804+09:00","level":"INFO","msg":"handler: started","stream_id":{"value":"stz0gukt"}}
+{"time":"2024-10-30T14:00:21.564796+09:00","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"stz0gukt"}}
+{"time":"2024-10-30T14:00:22.15343+09:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-10-30T14:00:22.524816+09:00","level":"INFO","msg":"stream: closing","id":"stz0gukt"}
+{"time":"2024-10-30T14:00:22.524865+09:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-10-30T14:00:22.525197+09:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-10-30T14:00:29.367933+09:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2024-10-30T14:00:29.695412+09:00","level":"INFO","msg":"handler: closed","stream_id":{"value":"stz0gukt"}}
+{"time":"2024-10-30T14:00:29.69578+09:00","level":"INFO","msg":"writer: Close: closed","stream_id":{"value":"stz0gukt"}}
+{"time":"2024-10-30T14:00:29.696384+09:00","level":"INFO","msg":"sender: closed","stream_id":"stz0gukt"}
+{"time":"2024-10-30T14:00:29.696423+09:00","level":"INFO","msg":"stream: closed","id":"stz0gukt"}

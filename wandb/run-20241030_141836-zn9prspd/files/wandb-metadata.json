@@ -1,0 +1,45 @@
+{
+  "os": "macOS-14.6.1-arm64-arm-64bit",
+  "python": "3.11.10",
+  "startedAt": "2024-10-30T05:18:36.545457Z",
+  "args": [
+    "--config",
+    "config/config_baseline.yaml",
+    "--device",
+    "cpu"
+  ],
+  "program": "/Users/jeongmookwag/boostcourse/level2-bookratingprediction-recsys-10/main.py",
+  "codePath": "main.py",
+  "git": {
+    "remote": "https://github.com/boostcampaitech7/level2-bookratingprediction-recsys-10.git",
+    "commit": "9dd2e7f912477aae77b25d9c0a9ee5aaa331e253"
+  },
+  "email": "saekuk@gmail.com",
+  "root": "/Users/jeongmookwag/boostcourse/level2-bookratingprediction-recsys-10",
+  "host": "Jeongmoos-MacBook-Air.local",
+  "username": "jeongmookwag",
+  "executable": "/Users/jeongmookwag/boostcourse/level2-bookratingprediction-recsys-10/.venv/bin/python",
+  "codePathLocal": "main.py",
+  "cpu_count": 8,
+  "cpu_count_logical": 8,
+  "disk": {
+    "/": {
+      "total": "245107195904",
+      "used": "167060545536"
+    }
+  },
+  "memory": {
+    "total": "8589934592"
+  },
+  "cpu": {
+    "count": 8,
+    "countLogical": 8
+  },
+  "apple": {
+    "name": "Apple M2",
+    "ecpuCores": 4,
+    "pcpuCores": 4,
+    "gpuCores": 8,
+    "memoryGb": 8
+  }
+}

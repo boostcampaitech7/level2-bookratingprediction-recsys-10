@@ -1,0 +1,25 @@
+--------------- FM Load Data ---------------
+--------------- FM Train/Valid Split ---------------
+--------------- INIT FM ---------------
+Traceback (most recent call last):
+  File "/Users/jeongmookwag/boostcourse/level2-bookratingprediction-recsys-10/main.py", line 175, in <module>
+    main(config_yaml)
+  File "/Users/jeongmookwag/boostcourse/level2-bookratingprediction-recsys-10/main.py", line 46, in main
+    model = getattr(model_module, args.model)(args.model_args[args.model], data).to(args.device)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jeongmookwag/boostcourse/level2-bookratingprediction-recsys-10/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1340, in to
+    return self._apply(convert)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jeongmookwag/boostcourse/level2-bookratingprediction-recsys-10/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 900, in _apply
+    module._apply(fn)
+  File "/Users/jeongmookwag/boostcourse/level2-bookratingprediction-recsys-10/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 900, in _apply
+    module._apply(fn)
+  File "/Users/jeongmookwag/boostcourse/level2-bookratingprediction-recsys-10/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 927, in _apply
+    param_applied = fn(param)
+                    ^^^^^^^^^
+  File "/Users/jeongmookwag/boostcourse/level2-bookratingprediction-recsys-10/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1326, in convert
+    return t.to(
+           ^^^^^
+  File "/Users/jeongmookwag/boostcourse/level2-bookratingprediction-recsys-10/.venv/lib/python3.11/site-packages/torch/cuda/__init__.py", line 310, in _lazy_init
+    raise AssertionError("Torch not compiled with CUDA enabled")
+AssertionError: Torch not compiled with CUDA enabled
