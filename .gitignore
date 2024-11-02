@@ -3,12 +3,12 @@
 # 2. 파이썬 가상환경 
 .venv/
 # 3. 데이터 csv
-data/
+/data/
 # 4. python cache
 __pycache__/
 # 5. wandb 디렉토리
-wandb/
+/wandb/
 # 6. saved 디렉토리
-saved/
+/saved/
 # 7. Mac OS 자동 생성 파일 삭제
 .DS_Store

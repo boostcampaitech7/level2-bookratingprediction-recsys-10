@@ -131,8 +131,7 @@ def context_data_load(args):
     # NCF를 사용할 경우, idx 0, 1은 각각 user_id, isbn이어야 합니다.
     user_features = ['user_id', 'age_range', 'location_country', 'location_state', 'location_city']
     book_features = ['isbn', 'book_title', 'book_author', 'publisher', 'language', 'category', 'publication_range']
-    sparse_cols = ['user_id', 'isbn'] + list(set(user_features + book_features) - {'user_id', 'isbn'}) if args.model == 'NCF' \
-                   else user_features + book_features
+    sparse_cols = ['user_id', 'isbn'] + list(set(user_features + book_features) - {'user_id', 'isbn'})
 
     # 선택한 컬럼만 추출하여 데이터 조인
     train_df = train.merge(users_, on='user_id', how='left')\
