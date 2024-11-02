@@ -10,3 +10,5 @@ __pycache__/
 /wandb/
 # 6. saved 디렉토리
 /saved/
+# 7. Mac OS 자동 생성 파일 삭제
+.DS_Store
