@@ -109,6 +109,7 @@ def valid(args, model, dataloader, loss_fn):
         else:
             x, y = data[0].to(args.device), data[1].to(args.device)
         y_hat = model(x)
+        y_hat = torch.clamp(y_hat, min=1, max=10)
         loss = loss_fn(y.float(), y_hat)
         total_loss += loss.item()
         
@@ -136,5 +137,6 @@ def test(args, model, dataloader, setting, checkpoint=None):
         else:
             x = data[0].to(args.device)
         y_hat = model(x)
+        y_hat = torch.clamp(y_hat, min=1, max=10)
         predicts.extend(y_hat.tolist())
     return predicts
