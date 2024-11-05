@@ -8,3 +8,5 @@ torch
 pillow
 torchvision
 python-dotenv
+xgboost
+catboost

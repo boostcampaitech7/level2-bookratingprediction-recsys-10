@@ -8,3 +8,5 @@ from .FM_Image import Image_FM, Image_DeepFM, ResNet_DeepFM
 from .FM_Text import Text_FM, Text_DeepFM
 from .LightGCN import LightGCN
 from .LightGBM import LightGBM
+from .CatBoost import CatBoost
+from .XGBoost import XGBoost

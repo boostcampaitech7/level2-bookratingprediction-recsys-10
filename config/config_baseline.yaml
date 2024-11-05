@@ -110,6 +110,13 @@ model_args:     # model에 해당하는 파라미터만 실질적으로 사용�
         n_estimators: 2000
         num_leaves: 31
         verbose: -1
+    CatBoost:
+        datatype: context
+        iterations: 10000
+    XGBoost:
+        datatype: context
+        n_estimators: 10000
+        early_stopping_rounds: 100
 
 
 dataset:
