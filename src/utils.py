@@ -83,6 +83,7 @@ class Setting:
             filename = os.path.join(args.train.submit_dir, f'{filename}.csv')
             
         return filename
+    
 
     def make_dir(self,path):
         '''
@@ -100,6 +101,27 @@ class Setting:
         else:
             pass
         return path
+    #########################################
+    def get_valid_filename(self, args):
+        '''
+        [description]
+        submit file을 저장할 경로를 반환하는 함수입니다.
+
+        [arguments]
+        args : argparse로 입력받은 args 값으로 이를 통해 모델의 정보를 전달받습니다.
+
+        [return]
+        filename : submit file을 저장할 경로를 반환합니다.
+        이 때, 파일명은 submit/날짜_시간_모델명.csv 입니다.
+        '''
+        if args.predict == False:
+            self.make_dir(args.dataset.valid_path)
+            filename = os.path.join(args.dataset.valid_path, f'{args.version[0]}.csv')
+        else:
+            filename = os.path.basename(args.checkpoint)
+            filename = os.path.join(args.dataset.valid_path, f'{args.version[0]}.csv')
+            
+        return filename
 
 
 class Logger:

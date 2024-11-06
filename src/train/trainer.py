@@ -91,7 +91,8 @@ def train(args, model, dataloader, logger, setting):
         else:
             os.makedirs(args.train.ckpt_dir, exist_ok=True)
             torch.save(model.state_dict(), f'{args.train.ckpt_dir}/{setting.save_time}_{args.model}_e{epoch:02}.pt')
-    
+        
+
     logger.close()
     
     return model
@@ -109,7 +110,6 @@ def valid(args, model, dataloader, loss_fn):
         else:
             x, y = data[0].to(args.device), data[1].to(args.device)
         y_hat = model(x)
-        y_hat = torch.clamp(y_hat, min=1, max=10)
         loss = loss_fn(y.float(), y_hat)
         total_loss += loss.item()
         
@@ -137,6 +137,29 @@ def test(args, model, dataloader, setting, checkpoint=None):
         else:
             x = data[0].to(args.device)
         y_hat = model(x)
-        y_hat = torch.clamp(y_hat, min=1, max=10)
+        predicts.extend(y_hat.tolist())
+    return predicts
+
+def sub(args, model, dataloader, setting, checkpoint=None):
+    predicts = list()
+    if checkpoint:
+        model.load_state_dict(torch.load(checkpoint, weights_only=True))
+    else:
+        if args.train.save_best_model:
+            model_path = f'{args.train.ckpt_dir}/{setting.save_time}_{args.model}_best.pt'
+        else:
+            # best가 아닐 경우 마지막 에폭으로 테스트하도록 함
+            model_path = f'{args.train.save_dir.checkpoint}/{setting.save_time}_{args.model}_e{args.train.epochs-1:02d}.pt'
+        model.load_state_dict(torch.load(model_path, weights_only=True))
+    
+    model.eval()
+    for data in dataloader['valid_dataloader']:
+        if args.model_args[args.model].datatype == 'image':
+            x = [data['user_book_vector'].to(args.device), data['img_vector'].to(args.device)]
+        elif args.model_args[args.model].datatype == 'text':
+            x = [data['user_book_vector'].to(args.device), data['user_summary_vector'].to(args.device), data['book_summary_vector'].to(args.device)]
+        else:
+            x = data[0].to(args.device)
+        y_hat = model(x)
         predicts.extend(y_hat.tolist())
     return predicts
