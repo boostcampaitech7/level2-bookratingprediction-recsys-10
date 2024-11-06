@@ -157,8 +157,8 @@ def context_data_load(args):
     # 사용할 컬럼을 user_features와 book_features에 정의합니다. (단, 모두 범주형 데이터로 가정)
     # 베이스라인에서는 가능한 모든 컬럼을 사용하도록 구성하였습니다.
     # NCF를 사용할 경우, idx 0, 1은 각각 user_id, isbn이어야 합니다.
-    user_features = ['user_id', 'age_range', 'location_country', 'location_state', 'location_city']
-    book_features = ['isbn', 'book_title', 'book_author', 'publisher', 'language', 'category', 'publication_range']
+    user_features = ['user_id', 'location_country','specific_age','author_multiple_works','frequently_reviewed']
+    book_features = ['isbn', 'publisher', 'book_author','language','category','publication_range','title_count','frequent_reviewer','rare_reviewer']
     if args.model == 'NCF':
         sparse_cols = ['user_id', 'isbn'] + list(set(user_features + book_features) - {'user_id', 'isbn'})
     else:
