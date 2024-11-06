@@ -38,7 +38,7 @@ def split_location(x: str) -> list:
     return res
 
 
-def process_context_data(users, books):
+def process_fixed_context_data(users, books):
     """
     Parameters
     ----------
@@ -164,7 +164,7 @@ def process_context_data(users, books):
     return users_, books_
 
 
-def context_data_load(args):
+def fixed_context_data_load(args):
     """
     Parameters
     ----------
@@ -184,7 +184,7 @@ def context_data_load(args):
     test = pd.read_csv(args.dataset.data_path + 'test_ratings.csv')
     sub = pd.read_csv(args.dataset.data_path + 'sample_submission.csv')
 
-    users_, books_ = process_context_data(users, books)
+    users_, books_ = process_fixed_context_data(users, books)
     
     
     # 유저 및 책 정보를 합쳐서 데이터 프레임 생성
@@ -209,11 +209,13 @@ def context_data_load(args):
     label2idx, idx2label = {}, {}
     for col in sparse_cols:
         all_df[col] = all_df[col].fillna('unknown')
+        train_df[col] = train_df[col].fillna('unknown')
+        test_df[col] = test_df[col].fillna('unknown')
         unique_labels = all_df[col].astype("category").cat.categories
         label2idx[col] = {label:idx for idx, label in enumerate(unique_labels)}
         idx2label[col] = {idx:label for idx, label in enumerate(unique_labels)}
-        train_df[col] = train_df[col].astype("category").cat.codes
-        test_df[col] = test_df[col].astype("category").cat.codes
+        train_df[col] = pd.Categorical(train_df[col], categories=unique_labels).codes
+        train_df[col] = pd.Categorical(test_df[col], categories=unique_labels).codes
     
     field_dims = [len(label2idx[col]) for col in train_df.columns if col != 'rating']
 
@@ -230,12 +232,12 @@ def context_data_load(args):
     return data
 
 
-def context_data_split(args, data):
+def fixed_context_data_split(args, data):
     '''data 내의 학습 데이터를 학습/검증 데이터로 나누어 추가한 후 반환합니다.'''
     return basic_data_split(args, data)
 
 
-def context_data_loader(args, data):
+def fixed_context_data_loader(args, data):
     """
     Parameters
     ----------
