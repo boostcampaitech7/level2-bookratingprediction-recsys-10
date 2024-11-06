@@ -36,7 +36,7 @@ def split_location(x: str) -> list:
     return res
 
 
-def process_context_data(users, books):
+def process_context_data(users, books,all_):
     """
     Parameters
     ----------
@@ -48,6 +48,8 @@ def process_context_data(users, books):
         train 데이터의 rating
     ratings2 : pd.DataFrame
         test 데이터의 rating
+    all_ : pd.DataFrame
+        train과 test 데이터를 합친 데이터
     
     Returns
     -------
@@ -63,14 +65,40 @@ def process_context_data(users, books):
 
     users_ = users.copy()
     books_ = books.copy()
+    all_ = all.copy()
+
 
     # 데이터 전처리 (전처리는 각자의 상황에 맞게 진행해주세요!)
     books_['category'] = books_['category'].apply(lambda x: str2list(x)[0] if not pd.isna(x) else np.nan)
     books_['language'] = books_['language'].fillna(books_['language'].mode()[0])
     books_['publication_range'] = books_['year_of_publication'].apply(lambda x: x // 10 * 10)  # 1990년대, 2000년대, 2010년대, ...
 
-    users_['age'] = users_['age'].fillna(users_['age'].mode()[0])
     users_['age_range'] = users_['age'].apply(lambda x: x // 10 * 10)  # 10대, 20대, 30대, ...
+    
+    users_['specific_age'] = users_['age'].apply(lambda x: 0 if pd.isna(x) else 1) # 나이 존재시 1, 없으면 0
+    # 책 제목별 개수 추가
+    title_counts = books_.groupby('book_title').size().reset_index(name='title_count')
+    books_ = books_.merge(title_counts, on='book_title', how='left')
+    
+    author_counts = books_.groupby('book_author').size().reset_index(name='author_work_count')
+    books_ = books_.merge(author_counts, on='book_author', how='left')
+    books_['author_multiple_works'] = np.where(books_['author_work_count'] > 1, 1, 0)
+    
+    # 아이템 리뷰 빈도 추가
+    item_review_count = all_['isbn'].value_counts().reset_index()
+    item_review_count.columns = ['isbn', 'item_review_count']
+    books_ = books_.merge(item_review_count, on='isbn', how='left')
+    books_['item_review_count'] = books_['item_review_count'].fillna(0)
+    books_['frequently_reviewed'] = books_['item_review_count'].apply(lambda x: 1 if x >= 30 else 0)
+
+    # 유저 리뷰 횟수 추가
+    user_review_count = all_['user_id'].value_counts().reset_index()
+    user_review_count.columns = ['user_id', 'user_review_count']
+    users_ = users_.merge(user_review_count, on='user_id', how='left')
+    users_['user_review_count'] = users_['user_review_count'].fillna(0)
+    users_['frequent_reviewer'] = users_['user_review_count'].apply(lambda x: 1 if x>=100 else 0)
+    users_['rare_reviewer'] = users_['user_review_count'].apply(lambda x: 1 if x <= 5 else 0)
+
 
     users_['location_list'] = users_['location'].apply(lambda x: split_location(x)) 
     users_['location_country'] = users_['location_list'].apply(lambda x: x[0])
@@ -121,16 +149,18 @@ def context_data_load(args):
     train = pd.read_csv(args.dataset.data_path + 'train_ratings.csv')
     test = pd.read_csv(args.dataset.data_path + 'test_ratings.csv')
     sub = pd.read_csv(args.dataset.data_path + 'sample_submission.csv')
+    
+    all_ = pd.concat([train,test], axis = 0)
 
-    users_, books_ = process_context_data(users, books)
+    users_, books_ = process_context_data(users, books, all_)
     
     
     # 유저 및 책 정보를 합쳐서 데이터 프레임 생성
     # 사용할 컬럼을 user_features와 book_features에 정의합니다. (단, 모두 범주형 데이터로 가정)
     # 베이스라인에서는 가능한 모든 컬럼을 사용하도록 구성하였습니다.
     # NCF를 사용할 경우, idx 0, 1은 각각 user_id, isbn이어야 합니다.
-    user_features = ['user_id', 'age_range', 'location_country', 'location_state', 'location_city']
-    book_features = ['isbn', 'book_title', 'book_author', 'publisher', 'language', 'category', 'publication_range']
+    user_features = ['user_id', 'location_country','specific_age','author_multiple_works','frequently_reviewed']
+    book_features = ['isbn', 'publisher', 'book_author','language','category','publication_range','title_count','frequent_reviewer','rare_reviewer']
     if args.model == 'NCF':
         sparse_cols = ['user_id', 'isbn'] + list(set(user_features + book_features) - {'user_id', 'isbn'})
     else:
