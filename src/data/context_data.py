@@ -149,8 +149,10 @@ def context_data_load(args):
     train = pd.read_csv(args.dataset.data_path + 'train_ratings.csv')
     test = pd.read_csv(args.dataset.data_path + 'test_ratings.csv')
     sub = pd.read_csv(args.dataset.data_path + 'sample_submission.csv')
+    
+    all_ = pd.concat([train,test], axis = 0)
 
-    users_, books_ = process_context_data(users, books)
+    users_, books_ = process_context_data(users, books, all_)
     
     
     # 유저 및 책 정보를 합쳐서 데이터 프레임 생성
