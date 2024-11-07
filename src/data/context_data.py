@@ -66,28 +66,34 @@ def process_context_data(users, books,all_):
     users_ = users.copy()
     books_ = books.copy()
     all_ = all_.copy()
+    
+    # 'isbn'을 기준으로 all_과 books 병합
+    item_review = all_.merge(books_, how='left', on='isbn')
+    
+    # 카테고리 전처리: 첫 번째 항목만 남기고 소문자로 변환
+    item_review['category'] = item_review['category'].apply(lambda x: str2list(x)[0].lower() if not pd.isna(x) else 'others')
+    
+    # 카테고리별 리뷰 수 집계
+    category_review_count = item_review.groupby('category').size().reset_index(name='category_review_count')
+    
+    # 상위 60개 카테고리 선택
+    top_60_categories = category_review_count.nlargest(80, 'category_review_count')['category']
+    
+    # 상위 60개에 포함되지 않는 카테고리를 'others'로 변경
+    books_['category'] = books_['category'].apply(lambda x: x if x in top_60_categories.values else 'others')
 
 
-    # 데이터 전처리 (전처리는 각자의 상황에 맞게 진행해주세요!)
-    
-    books_['category'] = books_['category'].apply(lambda x: str2list(x)[0].lower() if not pd.isna(x) else np.nan)
-    
-    
-    
-    # 상위 60개 카테고리만 유지하고 나머지 'others'로 대체
-    category_counts = books_['category'].value_counts()
-    top_80_categories = category_counts.nlargest(60).index
-    books_['category'] = books_['category'].apply(lambda x: x if x in top_80_categories else 'others')
 
-    # 동일한 제목을 가진 책의 카테고리를 찾기 위해 title 기반 dictionary 생성
-    title_to_category = books_[books_['category'].isin(top_80_categories)].groupby('book_title')['category'].first().to_dict()
 
-    # 'others'와 'fiction' 카테고리의 책들에 대해 title_to_category 매핑 적용
-    books_['category'] = books_.apply(
-        lambda row: title_to_category.get(row['book_title'], row['category']) 
-        if row['category'] in ['others', 'fiction'] else row['category'], 
-        axis=1
-    )
+
+    # 출판사 범주화 코드
+    #하위 10% 이하의 출판 빈도를 'others'로 통합
+    publisher_counts = books_['publisher'].value_counts()
+    books_['publisher_count'] = books_['publisher'].map(publisher_counts)
+    threshold_10 = np.percentile(books_['publisher_count'], 10)
+    books_['publisher_others_10'] = books_['publisher'].where(books_['publisher_count'] >   threshold_10, 'others')
+ 
+
 
 
     
@@ -175,7 +181,7 @@ def context_data_load(args):
     # 베이스라인에서는 가능한 모든 컬럼을 사용하도록 구성하였습니다.
     # NCF를 사용할 경우, idx 0, 1은 각각 user_id, isbn이어야 합니다.
     user_features = ['user_id', 'location_country','specific_age','author_multiple_works','frequently_reviewed']
-    book_features = ['isbn', 'publisher', 'book_author','language','category','publication_range','title_count','frequent_reviewer','rare_reviewer']
+    book_features = ['isbn', 'book_author','language','category','publication_range','title_count','frequent_reviewer','rare_reviewer','publisher_others_10']
     if args.model == 'NCF':
         sparse_cols = ['user_id', 'isbn'] + list(set(user_features + book_features) - {'user_id', 'isbn'})
     else:
