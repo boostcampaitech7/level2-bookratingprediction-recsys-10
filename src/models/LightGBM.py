@@ -10,8 +10,8 @@ class LightGBM(torch.nn.Module):
         args_dict = OmegaConf.to_container(args, resolve=True)
         X_train, y_train = data['X_train'], data['y_train']
         X_valid, y_valid = data['X_valid'], data['y_valid']
-        user_features = ['user_id', 'age_range', 'location_country', 'location_state', 'location_city'] 
-        book_features = ['isbn', 'book_title', 'book_author', 'publisher', 'language', 'category', 'publication_range']
+        user_features = ['user_id', 'location_country','specific_age','author_multiple_works','frequently_reviewed','age_range','location_state','location_city'] 
+        book_features = ['isbn', 'publisher', 'book_author','language','category','publication_range','title_count','frequent_reviewer','rare_reviewer','book_title']
         all_cols = user_features + book_features
         
         X_train, X_valid = X_train[all_cols], X_valid[all_cols]

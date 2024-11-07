@@ -4,10 +4,40 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 import torch
+import regex
 from torch.utils.data import DataLoader, Dataset
 from transformers import AutoTokenizer, AutoModel
 from .basic_data import basic_data_split
 
+def str2list(x: str) -> list:
+    '''문자열을 리스트로 변환하는 함수'''
+    return x[1:-1].split(', ')
+
+
+def split_location(x: str) -> list:
+    '''
+    Parameters
+    ----------
+    x : str
+        location 데이터
+
+    Returns
+    -------
+    res : list
+        location 데이터를 나눈 뒤, 정제한 결과를 반환합니다.
+        순서는 country, state, city, ... 입니다.
+    '''
+    res = x.split(',')
+    res = [i.strip().lower() for i in res]
+    res = [regex.sub(r'[^a-zA-Z/ ]', '', i) for i in res]  # remove special characters
+    res = [i if i not in ['n/a', ''] else np.nan for i in res]  # change 'n/a' into NaN
+    res.reverse()  # reverse the list to get country, state, city, ... order
+
+    for i in range(len(res)-1, 0, -1):
+        if (res[i] in res[:i]) and (not pd.isna(res[i])):  # remove duplicated values if not NaN
+            res.pop(i)
+
+    return res
 
 def text_preprocessing(summary):
     """
@@ -90,14 +120,19 @@ def process_text_data(ratings, users, books, tokenizer, model, vector_create=Fal
 
         print('Create Item Summary Vector')
         book_summary_vector_list = []
-        for title, summary in tqdm(zip(books_['book_title'], books_['summary']), total=len(books_)):
-            # 책에 대한 텍스트 프롬프트는 아래와 같이 구성됨
-            # '''
-            # Book Title: {title}
-            # Summary: {summary}
-            # '''
-            prompt_ = f'Book Title: {title}\n Summary: {summary}\n'
-            vector = text_to_vector(prompt_, tokenizer, model)
+        for title, summary, genre in tqdm(zip(books_['book_title'], books_['summary'], books_['category']), total=len(books_)):
+        # Construct the prompt based on the title, summary, and genre
+        # '''
+        # Book Title: {title}
+        # Genre: {genre}
+        # Summary: {summary}
+        # '''
+            if summary == 'None':  # if there is no summary
+                vector = np.zeros((768,))  # create a 768-dimensional zero vector
+            else:
+            # Include genre in the prompt
+                prompt_ = f'Book Title: {title}\n Genre: {genre}\n Summary: {summary}\n'
+                vector = text_to_vector(prompt_, tokenizer, model)
             book_summary_vector_list.append(vector)
         
         book_summary_vector_list = np.concatenate([
@@ -111,28 +146,24 @@ def process_text_data(ratings, users, books, tokenizer, model, vector_create=Fal
         print('Create User Summary Merge Vector')
         user_summary_merge_vector_list = []
         for books_read in tqdm(users_['books_read']):
-            if not isinstance(books_read, list) and pd.isna(books_read):  # 유저가 읽은 책이 없는 경우, 텍스트 임베딩을 0으로 처리
+            if not isinstance(books_read, list) and pd.isna(books_read):  # If the user has not read any books, use a zero vector
                 user_summary_merge_vector_list.append(np.zeros((768)))
                 continue
             
-            read_books = books_[books_['isbn'].isin(books_read)][['book_title', 'summary', 'review_count']]
-            read_books = read_books.sort_values('review_count', ascending=False).head(5)  # review_count가 높은 순으로 5개의 책을 선택
-            # 유저에 대한 텍스트 프롬프트는 아래와 같이 구성됨
-            # DeepCoNN에서 유저의 리뷰를 요약하여 하나의 벡터로 만들어 사용함을 참고 (https://arxiv.org/abs/1701.04783)
-            # '''
-            # Five Books That You Read
-            # 1. Book Title: {title}
-            # Summary: {summary}
-            # ...
-            # 5. Book Title: {title}
-            # Summary: {summary}
-            # '''
+            # Select up to 5 books with the highest review count for the user
+            read_books = books_[books_['isbn'].isin(books_read)][['book_title', 'summary', 'category', 'review_count']]
+            read_books = read_books.sort_values('review_count', ascending=False).head(5)
+            
+            # Construct the user prompt, including genre information
             prompt_ = f'{num2txt[len(read_books)]} Books That You Read\n'
-            for idx, (title, summary) in enumerate(zip(read_books['book_title'], read_books['summary'])):
-                summary = summary if len(summary) < 100 else f'{summary[:100]} ...'
-                prompt_ += f'{idx+1}. Book Title: {title}\n Summary: {summary}\n'
+            for idx, (title, summary, genre) in enumerate(zip(read_books['book_title'], read_books['summary'], read_books['category'])):
+                summary = summary if len(summary) < 100 else f'{summary[:100]} ...'  # Truncate long summaries
+                # Include genre in the prompt
+                prompt_ += f'{idx+1}. Book Title: {title}\n Genre: {genre}\n Summary: {summary}\n'
+            
             vector = text_to_vector(prompt_, tokenizer, model)
             user_summary_merge_vector_list.append(vector)
+
         
         user_summary_merge_vector_list = np.concatenate([
                                                          users_['user_id'].values.reshape(-1, 1),
@@ -154,6 +185,61 @@ def process_text_data(ratings, users, books, tokenizer, model, vector_create=Fal
 
     books_ = pd.merge(books_, book_summary_vector_df, on='isbn', how='left')
     users_ = pd.merge(users_, user_summary_vector_df, on='user_id', how='left')
+    
+    books_['category'] = books_['category'].apply(lambda x: str2list(x)[0] if not pd.isna(x) else np.nan)
+    books_['language'] = books_['language'].fillna(books_['language'].mode()[0])
+    books_['publication_range'] = books_['year_of_publication'].apply(lambda x: x // 10 * 10)  # 1990년대, 2000년대, 2010년대, ...
+
+    users_['age_range'] = users_['age'].apply(lambda x: x // 10 * 10)  # 10대, 20대, 30대, ...
+    
+    users_['specific_age'] = users_['age'].apply(lambda x: 0 if pd.isna(x) else 1) # 나이 존재시 1, 없으면 0
+    # 책 제목별 개수 추가
+    title_counts = books_.groupby('book_title').size().reset_index(name='title_count')
+    books_ = books_.merge(title_counts, on='book_title', how='left')
+    
+    author_counts = books_.groupby('book_author').size().reset_index(name='author_work_count')
+    books_ = books_.merge(author_counts, on='book_author', how='left')
+    books_['author_multiple_works'] = np.where(books_['author_work_count'] > 1, 1, 0)
+    
+    # 아이템 리뷰 빈도 추가
+    item_review_count = ratings['isbn'].value_counts().reset_index()
+    item_review_count.columns = ['isbn', 'item_review_count']
+    books_ = books_.merge(item_review_count, on='isbn', how='left')
+    books_['item_review_count'] = books_['item_review_count'].fillna(0)
+    books_['frequently_reviewed'] = books_['item_review_count'].apply(lambda x: 1 if x >= 30 else 0)
+
+    # 유저 리뷰 횟수 추가
+    user_review_count = ratings['user_id'].value_counts().reset_index()
+    user_review_count.columns = ['user_id', 'user_review_count']
+    users_ = users_.merge(user_review_count, on='user_id', how='left')
+    users_['user_review_count'] = users_['user_review_count'].fillna(0)
+    users_['frequent_reviewer'] = users_['user_review_count'].apply(lambda x: 1 if x>=100 else 0)
+    users_['rare_reviewer'] = users_['user_review_count'].apply(lambda x: 1 if x <= 5 else 0)
+
+
+    users_['location_list'] = users_['location'].apply(lambda x: split_location(x)) 
+    users_['location_country'] = users_['location_list'].apply(lambda x: x[0])
+    users_['location_state'] = users_['location_list'].apply(lambda x: x[1] if len(x) > 1 else np.nan)
+    users_['location_city'] = users_['location_list'].apply(lambda x: x[2] if len(x) > 2 else np.nan)
+    for idx, row in users_.iterrows():
+        if (not pd.isna(row['location_state'])) and pd.isna(row['location_country']):
+            fill_country = users_[users_['location_state'] == row['location_state']]['location_country'].mode()
+            fill_country = fill_country[0] if len(fill_country) > 0 else np.nan
+            users_.loc[idx, 'location_country'] = fill_country
+        elif (not pd.isna(row['location_city'])) and pd.isna(row['location_state']):
+            if not pd.isna(row['location_country']):
+                fill_state = users_[(users_['location_country'] == row['location_country']) 
+                                    & (users_['location_city'] == row['location_city'])]['location_state'].mode()
+                fill_state = fill_state[0] if len(fill_state) > 0 else np.nan
+                users_.loc[idx, 'location_state'] = fill_state
+            else:
+                fill_state = users_[users_['location_city'] == row['location_city']]['location_state'].mode()
+                fill_state = fill_state[0] if len(fill_state) > 0 else np.nan
+                fill_country = users_[users_['location_city'] == row['location_city']]['location_country'].mode()
+                fill_country = fill_country[0] if len(fill_country) > 0 else np.nan
+                users_.loc[idx, 'location_country'] = fill_country
+                users_.loc[idx, 'location_state'] = fill_state
+
 
     return users_, books_
 
@@ -223,15 +309,15 @@ def text_data_load(args):
 
     # 유저 및 책 정보를 합쳐서 데이터 프레임 생성 (단, 베이스라인에서는 user_id, isbn, user_summary_merge_vector, book_summary_vector만 사용함)
     # 사용할 컬럼을 user_features와 book_features에 정의합니다. (단, 모두 범주형 데이터로 가정)
-    user_features = []
-    book_features = []
+    user_features = ['user_id', 'location_country','specific_age','author_multiple_works','frequently_reviewed']
+    book_features = ['isbn', 'language','publication_range','title_count','frequent_reviewer','rare_reviewer']
     sparse_cols = ['user_id', 'isbn'] + list(set(user_features + book_features) - {'user_id', 'isbn'})
     
     train_df = train.merge(books_, on='isbn', how='left')\
                     .merge(users_, on='user_id', how='left')[sparse_cols + ['user_summary_merge_vector', 'book_summary_vector', 'rating']]
     test_df = test.merge(books_, on='isbn', how='left')\
                   .merge(users_, on='user_id', how='left')[sparse_cols + ['user_summary_merge_vector', 'book_summary_vector']]
-    all_df = pd.concat([train, test], axis=0)
+    all_df = pd.concat([train_df, test_df], axis=0)
 
     # feature_cols의 데이터만 라벨 인코딩하고 인덱스 정보를 저장
     label2idx, idx2label = {}, {}

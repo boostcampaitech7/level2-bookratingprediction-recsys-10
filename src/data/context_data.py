@@ -65,11 +65,32 @@ def process_context_data(users, books,all_):
 
     users_ = users.copy()
     books_ = books.copy()
-    all_ = all.copy()
+    all_ = all_.copy()
 
 
     # 데이터 전처리 (전처리는 각자의 상황에 맞게 진행해주세요!)
-    books_['category'] = books_['category'].apply(lambda x: str2list(x)[0] if not pd.isna(x) else np.nan)
+    
+    books_['category'] = books_['category'].apply(lambda x: str2list(x)[0].lower() if not pd.isna(x) else np.nan)
+    
+    
+    
+    # 상위 60개 카테고리만 유지하고 나머지 'others'로 대체
+    category_counts = books_['category'].value_counts()
+    top_80_categories = category_counts.nlargest(60).index
+    books_['category'] = books_['category'].apply(lambda x: x if x in top_80_categories else 'others')
+
+    # 동일한 제목을 가진 책의 카테고리를 찾기 위해 title 기반 dictionary 생성
+    title_to_category = books_[books_['category'].isin(top_80_categories)].groupby('book_title')['category'].first().to_dict()
+
+    # 'others'와 'fiction' 카테고리의 책들에 대해 title_to_category 매핑 적용
+    books_['category'] = books_.apply(
+        lambda row: title_to_category.get(row['book_title'], row['category']) 
+        if row['category'] in ['others', 'fiction'] else row['category'], 
+        axis=1
+    )
+
+
+    
     books_['language'] = books_['language'].fillna(books_['language'].mode()[0])
     books_['publication_range'] = books_['year_of_publication'].apply(lambda x: x // 10 * 10)  # 1990년대, 2000년대, 2010년대, ...
 
@@ -110,18 +131,12 @@ def process_context_data(users, books,all_):
             fill_country = fill_country[0] if len(fill_country) > 0 else np.nan
             users_.loc[idx, 'location_country'] = fill_country
         elif (not pd.isna(row['location_city'])) and pd.isna(row['location_state']):
-            if not pd.isna(row['location_country']):
-                fill_state = users_[(users_['location_country'] == row['location_country']) 
-                                    & (users_['location_city'] == row['location_city'])]['location_state'].mode()
-                fill_state = fill_state[0] if len(fill_state) > 0 else np.nan
-                users_.loc[idx, 'location_state'] = fill_state
-            else:
-                fill_state = users_[users_['location_city'] == row['location_city']]['location_state'].mode()
-                fill_state = fill_state[0] if len(fill_state) > 0 else np.nan
-                fill_country = users_[users_['location_city'] == row['location_city']]['location_country'].mode()
-                fill_country = fill_country[0] if len(fill_country) > 0 else np.nan
-                users_.loc[idx, 'location_country'] = fill_country
-                users_.loc[idx, 'location_state'] = fill_state
+            
+            
+            fill_country = users_[users_['location_city'] == row['location_city']]['location_country'].mode()
+            fill_country = fill_country[0] if len(fill_country) > 0 else np.nan
+            users_.loc[idx, 'location_country'] = fill_country
+                
 
                
     

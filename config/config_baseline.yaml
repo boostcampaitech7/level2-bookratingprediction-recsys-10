@@ -138,7 +138,7 @@ optimizer:
     type: Adam      # 사용가능한 optimizer: torch.optim.Optimizer 클래스 (https://pytorch.org/docs/stable/optim.html#algorithms)
     args:           # 사용하고자 하는 클래스의 파라미터를 참고하여 추가해주시면 되며, 관계가 없는 파라미터는 무시됩니다.
         lr: 5e-3            # 예) 모든 옵티마이저에서 사용되는 학습률
-        weight_decay: 1e-4  # 예) Adam 등 / L2 정규화 가중치
+        weight_decay: 0  # 예) Adam 등 / L2 정규화 가중치
         amsgrad: False      # 예) Adam 등 / amsgrad 사용 여부
 
 loss: RMSELoss          # 직접 정의한 loss 클래스 또는 torch.nn.Module 클래스 (https://pytorch.org/docs/stable/nn.html#loss-functions)
