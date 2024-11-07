@@ -65,11 +65,38 @@ def process_context_data(users, books,all_):
 
     users_ = users.copy()
     books_ = books.copy()
-    all_ = all.copy()
+    all_ = all_.copy()
+    
+    # 'isbn'을 기준으로 all_과 books 병합
+    item_review = all_.merge(books_, how='left', on='isbn')
+    
+    # 카테고리 전처리: 첫 번째 항목만 남기고 소문자로 변환
+    item_review['category'] = item_review['category'].apply(lambda x: str2list(x)[0].lower() if not pd.isna(x) else 'others')
+    
+    # 카테고리별 리뷰 수 집계
+    category_review_count = item_review.groupby('category').size().reset_index(name='category_review_count')
+    
+    # 상위 60개 카테고리 선택
+    top_60_categories = category_review_count.nlargest(80, 'category_review_count')['category']
+    
+    # 상위 60개에 포함되지 않는 카테고리를 'others'로 변경
+    books_['category'] = books_['category'].apply(lambda x: x if x in top_60_categories.values else 'others')
 
 
-    # 데이터 전처리 (전처리는 각자의 상황에 맞게 진행해주세요!)
-    books_['category'] = books_['category'].apply(lambda x: str2list(x)[0] if not pd.isna(x) else np.nan)
+
+
+
+    # 출판사 범주화 코드
+    #하위 10% 이하의 출판 빈도를 'others'로 통합
+    publisher_counts = books_['publisher'].value_counts()
+    books_['publisher_count'] = books_['publisher'].map(publisher_counts)
+    threshold_10 = np.percentile(books_['publisher_count'], 10)
+    books_['publisher_others_10'] = books_['publisher'].where(books_['publisher_count'] >   threshold_10, 'others')
+ 
+
+
+
+    
     books_['language'] = books_['language'].fillna(books_['language'].mode()[0])
     books_['publication_range'] = books_['year_of_publication'].apply(lambda x: x // 10 * 10)  # 1990년대, 2000년대, 2010년대, ...
 
@@ -98,6 +125,26 @@ def process_context_data(users, books,all_):
     users_['user_review_count'] = users_['user_review_count'].fillna(0)
     users_['frequent_reviewer'] = users_['user_review_count'].apply(lambda x: 1 if x>=100 else 0)
     users_['rare_reviewer'] = users_['user_review_count'].apply(lambda x: 1 if x <= 5 else 0)
+    # publiser의 book count에 대한 범주 추가
+    # publisher_count = books_['publisher'].value_counts().reset_index()
+    # publisher_count.columns = ['publisher', 'publisher_review_count']
+    # books_ = books_.merge(publisher_count, on='publisher', how='left')
+    # books_['publisher_review_count'] = books_['publisher_review_count'].fillna(0)
+    # books_['rare_publisher'] = books_['publisher_review_count'].apply(lambda x: 1 if x < 30 else 0)
+    # books_['nomal_publisher'] = books_['publisher_review_count'].apply(lambda x: 1 if x >= 30 and x < 500 else 0)
+    # books_['frequently_publisher'] = books_['publisher_review_count'].apply(lambda x: 1 if x >= 500 else 0)
+
+    #publisher별 user_rating count 범주화
+    check = books_.copy()
+    view = all_.merge(check, on='isbn', how='left')
+    publisher_rating_count = view.groupby('publisher')['rating'].count().reset_index()
+    publisher_rating_count.columns = ['publisher', 'publisher_rating_count']  # 열 이름 설정
+    books_ = books_.merge(publisher_rating_count, on='publisher', how='left')
+    books_['publisher_rating_count'] = books_['publisher_rating_count'].fillna(-1)  # 결측치는 0으로 대체
+    books_['rare_publisher'] = books_['publisher_rating_count'].apply(lambda x: 1 if x < 30 else 0)
+    books_['nomal_publisher'] = books_['publisher_rating_count'].apply(lambda x: 1 if 30 <= x < 500 else 0)
+    books_['frequently_publisher'] = books_['publisher_rating_count'].apply(lambda x: 1 if x >= 500 else 0)
+
 
 
     users_['location_list'] = users_['location'].apply(lambda x: split_location(x)) 
@@ -110,18 +157,12 @@ def process_context_data(users, books,all_):
             fill_country = fill_country[0] if len(fill_country) > 0 else np.nan
             users_.loc[idx, 'location_country'] = fill_country
         elif (not pd.isna(row['location_city'])) and pd.isna(row['location_state']):
-            if not pd.isna(row['location_country']):
-                fill_state = users_[(users_['location_country'] == row['location_country']) 
-                                    & (users_['location_city'] == row['location_city'])]['location_state'].mode()
-                fill_state = fill_state[0] if len(fill_state) > 0 else np.nan
-                users_.loc[idx, 'location_state'] = fill_state
-            else:
-                fill_state = users_[users_['location_city'] == row['location_city']]['location_state'].mode()
-                fill_state = fill_state[0] if len(fill_state) > 0 else np.nan
-                fill_country = users_[users_['location_city'] == row['location_city']]['location_country'].mode()
-                fill_country = fill_country[0] if len(fill_country) > 0 else np.nan
-                users_.loc[idx, 'location_country'] = fill_country
-                users_.loc[idx, 'location_state'] = fill_state
+            
+            
+            fill_country = users_[users_['location_city'] == row['location_city']]['location_country'].mode()
+            fill_country = fill_country[0] if len(fill_country) > 0 else np.nan
+            users_.loc[idx, 'location_country'] = fill_country
+                
 
                
     
@@ -160,7 +201,8 @@ def context_data_load(args):
     # 베이스라인에서는 가능한 모든 컬럼을 사용하도록 구성하였습니다.
     # NCF를 사용할 경우, idx 0, 1은 각각 user_id, isbn이어야 합니다.
     user_features = ['user_id', 'location_country','specific_age','author_multiple_works','frequently_reviewed']
-    book_features = ['isbn', 'publisher', 'book_author','language','category','publication_range','title_count','frequent_reviewer','rare_reviewer']
+    book_features = ['isbn', 'book_author','language','category','publication_range','title_count','frequent_reviewer','rare_reviewer','publisher_others_10'
+                     ,'rare_publisher','nomal_publisher','frequently_publisher']
     if args.model == 'NCF':
         sparse_cols = ['user_id', 'isbn'] + list(set(user_features + book_features) - {'user_id', 'isbn'})
     else:

@@ -39,7 +39,7 @@ class Ensemble:
         '''
         if not len(self.output_list)==len(weight):
             raise ValueError("오류 : model과 weight의 길이가 일치하지 않습니다.")
-        if np.sum(weight)!=1:
+        if np.sum(weight)>=1.01:
             raise ValueError("오류 : weight의 합이 1이 되도록 입력해 주세요.")
 
         pred_arr = np.append([self.output_list[0]], [self.output_list[1]], axis=0)
