@@ -125,6 +125,26 @@ def process_context_data(users, books,all_):
     users_['user_review_count'] = users_['user_review_count'].fillna(0)
     users_['frequent_reviewer'] = users_['user_review_count'].apply(lambda x: 1 if x>=100 else 0)
     users_['rare_reviewer'] = users_['user_review_count'].apply(lambda x: 1 if x <= 5 else 0)
+    # publiser의 book count에 대한 범주 추가
+    # publisher_count = books_['publisher'].value_counts().reset_index()
+    # publisher_count.columns = ['publisher', 'publisher_review_count']
+    # books_ = books_.merge(publisher_count, on='publisher', how='left')
+    # books_['publisher_review_count'] = books_['publisher_review_count'].fillna(0)
+    # books_['rare_publisher'] = books_['publisher_review_count'].apply(lambda x: 1 if x < 30 else 0)
+    # books_['nomal_publisher'] = books_['publisher_review_count'].apply(lambda x: 1 if x >= 30 and x < 500 else 0)
+    # books_['frequently_publisher'] = books_['publisher_review_count'].apply(lambda x: 1 if x >= 500 else 0)
+
+    #publisher별 user_rating count 범주화
+    check = books_.copy()
+    view = all_.merge(check, on='isbn', how='left')
+    publisher_rating_count = view.groupby('publisher')['rating'].count().reset_index()
+    publisher_rating_count.columns = ['publisher', 'publisher_rating_count']  # 열 이름 설정
+    books_ = books_.merge(publisher_rating_count, on='publisher', how='left')
+    books_['publisher_rating_count'] = books_['publisher_rating_count'].fillna(-1)  # 결측치는 0으로 대체
+    books_['rare_publisher'] = books_['publisher_rating_count'].apply(lambda x: 1 if x < 30 else 0)
+    books_['nomal_publisher'] = books_['publisher_rating_count'].apply(lambda x: 1 if 30 <= x < 500 else 0)
+    books_['frequently_publisher'] = books_['publisher_rating_count'].apply(lambda x: 1 if x >= 500 else 0)
+
 
 
     users_['location_list'] = users_['location'].apply(lambda x: split_location(x)) 
@@ -181,7 +201,8 @@ def context_data_load(args):
     # 베이스라인에서는 가능한 모든 컬럼을 사용하도록 구성하였습니다.
     # NCF를 사용할 경우, idx 0, 1은 각각 user_id, isbn이어야 합니다.
     user_features = ['user_id', 'location_country','specific_age','author_multiple_works','frequently_reviewed']
-    book_features = ['isbn', 'book_author','language','category','publication_range','title_count','frequent_reviewer','rare_reviewer','publisher_others_10']
+    book_features = ['isbn', 'book_author','language','category','publication_range','title_count','frequent_reviewer','rare_reviewer','publisher_others_10'
+                     ,'rare_publisher','nomal_publisher','frequently_publisher']
     if args.model == 'NCF':
         sparse_cols = ['user_id', 'isbn'] + list(set(user_features + book_features) - {'user_id', 'isbn'})
     else:
