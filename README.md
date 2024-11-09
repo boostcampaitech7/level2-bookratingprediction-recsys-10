@@ -3,8 +3,8 @@
 
 ## Team
 |곽정무|박준하|박태지|신경호|이효준
-|----|----|----|---|---|
-|<img src = 'https://avatars.githubusercontent.com/u/20788198?v=4'>|<img src = 'https://avatars.githubusercontent.com/u/81938013?v=4'>|<img src = 'https://avatars.githubusercontent.com/u/112858891?v=4'>|<img src = 'https://avatars.githubusercontent.com/u/103016689?s=64&v=4'>|<img src = 'https://avatars.githubusercontent.com/u/176903280?v=4'>|
+|:-:|:-:|:-:|:-:|:-:|
+|<img  width="100" height="100" src = 'https://avatars.githubusercontent.com/u/20788198?v=4'>|<img  width="100" height="100" src = 'https://avatars.githubusercontent.com/u/81938013?v=4'>|<img  width="100" height="100" src = 'https://avatars.githubusercontent.com/u/112858891?v=4'>|<img  width="100" height="100" src = 'https://avatars.githubusercontent.com/u/103016689?s=64&v=4'>|<img  width="100" height="100" src = 'https://avatars.githubusercontent.com/u/176903280?v=4'>|
 |<a href = 'https://github.com/jkwag'><img src = 'https://img.shields.io/badge/github%20pages-121013?style=for-the-badge&logo=github&logoColor=white'> </a>|<a href = 'https://github.com/joshua5301'><img src = 'https://img.shields.io/badge/github%20pages-121013?style=for-the-badge&logo=github&logoColor=white'> </a>|<a href = 'https://github.com/spsp4755'><img src = 'https://img.shields.io/badge/github%20pages-121013?style=for-the-badge&logo=github&logoColor=white'> </a>|<a href = 'https://github.com/Human3321'><img src = 'https://img.shields.io/badge/github%20pages-121013?style=for-the-badge&logo=github&logoColor=white'> </a>|<a href = 'https://github.com/Jun9096'><img src = 'https://img.shields.io/badge/github%20pages-121013?style=for-the-badge&logo=github&logoColor=white'> </a>|
 
 
@@ -13,7 +13,8 @@
 
 
 ## 프로젝트 구조
-> 📦level2-bookratingprediction-recsys-10
+```
+ 📦level2-bookratingprediction-recsys-10
  ┣ 📂config
  ┃ ┣ 📜config_baseline.yaml
  ┃ ┗ 📜sweep_example.yaml
@@ -60,7 +61,7 @@
  ┣ 📜run_ensemble.sh
  ┣ 📜tem.py
  ┗ 📜test.py
-
+```
 
 ## 개발환경
 - python 3.10.0
